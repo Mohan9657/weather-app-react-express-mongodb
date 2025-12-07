@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 
 export default function App() {
   const [city, setCity] = useState("");
@@ -9,10 +9,10 @@ export default function App() {
   const [searchResult, setSearchResult] = useState(null);
   const [errorMsg, setErrorMsg] = useState("");
 
-  // Load nothing on start (we removed saved history section)
-  useEffect(() => {}, []);
+  // ✅ Render backend base URL
+  const API_BASE = "https://weather-app-react-express-mongodb.onrender.com/api/weather";
 
-  // Save weather to DB
+  // ✅ Save weather to MongoDB
   const saveWeather = async () => {
     if (!city || !temp || !wind) {
       alert("Please fill all fields");
@@ -20,7 +20,7 @@ export default function App() {
     }
 
     try {
-      const res = await fetch("https://weather-app-react-express-mongodb.onrender.com", {
+      const res = await fetch(API_BASE, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -30,27 +30,29 @@ export default function App() {
         }),
       });
 
-      const data = await res.json();
-      alert("Weather saved!");
-      setCity("");
-      setTemp("");
-      setWind("");
+      if (res.ok) {
+        alert("✅ Weather saved successfully!");
+        setCity("");
+        setTemp("");
+        setWind("");
+      } else {
+        alert("⚠️ Error saving weather.");
+      }
     } catch (error) {
-      alert("Error saving weather");
+      console.error(error);
+      alert("❌ Unable to connect to server.");
     }
   };
 
-  // Search weather by city
+  // ✅ Search weather by city
   const searchWeather = async () => {
     if (!searchCity) return;
 
     try {
-      const res = await fetch(
-        `https://weather-app-react-express-mongodb.onrender.com/${searchCity}`
-      );
+      const res = await fetch(`${API_BASE}/${searchCity}`);
 
       if (!res.ok) {
-        setErrorMsg("City not found.");
+        setErrorMsg("❌ City not found in database.");
         setSearchResult(null);
         return;
       }
@@ -59,7 +61,8 @@ export default function App() {
       setSearchResult(data);
       setErrorMsg("");
     } catch (err) {
-      setErrorMsg("Error fetching weather.");
+      console.error(err);
+      setErrorMsg("⚠️ Error fetching weather data.");
       setSearchResult(null);
     }
   };
@@ -68,7 +71,7 @@ export default function App() {
     <div
       style={{
         minHeight: "100vh",
-        width: "100vw", // full width
+        width: "100vw",
         background: "#020617",
         color: "white",
         padding: "32px",
@@ -77,11 +80,17 @@ export default function App() {
           'system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
       }}
     >
-      <h1 style={{ fontSize: "40px", fontWeight: "bold", marginBottom: "20px" }}>
+      <h1
+        style={{
+          fontSize: "40px",
+          fontWeight: "bold",
+          marginBottom: "20px",
+        }}
+      >
         Weather App with MongoDB
       </h1>
 
-      {/* Add Weather Section */}
+      {/* Add / Update Weather Section */}
       <h2 style={{ marginTop: "20px" }}>Add / Update Weather</h2>
 
       <div style={{ display: "flex", gap: "12px", marginTop: "15px" }}>
@@ -103,7 +112,6 @@ export default function App() {
           onChange={(e) => setWind(e.target.value)}
           style={inputStyle}
         />
-
         <button style={buttonStyle} onClick={saveWeather}>
           Save Weather
         </button>
@@ -119,7 +127,6 @@ export default function App() {
           onChange={(e) => setSearchCity(e.target.value)}
           style={inputStyle}
         />
-
         <button style={buttonStyleGreen} onClick={searchWeather}>
           Get Weather
         </button>
@@ -152,7 +159,7 @@ export default function App() {
   );
 }
 
-/* Reusable styles */
+/* 🌈 Reusable styles */
 const inputStyle = {
   padding: "10px",
   borderRadius: "6px",
