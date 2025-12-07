@@ -46,7 +46,7 @@ export default function App() {
 
     try {
       const res = await fetch(
-        `http://localhost:5000/api/weather/${searchCity}`
+        `https://weather-app-react-express-mongodb.onrender.com/${searchCity}`
       );
 
       if (!res.ok) {
